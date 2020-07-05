@@ -15,6 +15,8 @@
 #include "string.h"
 #include "stdio.h"
 
+#include "wifi_tokens.h"
+
 #define BAND    915E6  //you can set band here directly,e.g. 868E6,915E6
 
 String rssi = "RSSI --";
@@ -37,7 +39,7 @@ void WIFISetUp(void)
 	delay(100);
 	WiFi.mode(WIFI_STA);
 	WiFi.setAutoConnect(true);
-	WiFi.begin("foo_bar","9412441646");//fill in "Your WiFi SSID","Your Password"
+	WiFi.begin(ssid,password);//fill in "Your WiFi SSID","Your Password"
 	delay(100);
 
 	byte count = 0;
