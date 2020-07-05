@@ -143,7 +143,7 @@ uint8_t scale = 100;                    // frequency scaling; hardwired on my te
 // based on consistency (for high levels) and counts (for low levels)  
 #define LOWLIGHTCRIT  200.0             // uW/cm2 criteria for low level input (so, set sensitivity to 100)
 
-#define CYCLESCOUNT 1                   // Number of cycles of sleep (so: CYCLESCOUNT * 8S sleep, effectively)
+#define CYCLESCOUNT 224                 // Number of cycles of sleep (so: CYCLESCOUNT * 8S sleep, effectively)
 uint16_t countCycles = 0;
 
 float uWattCm2;                         // calculated light level 
