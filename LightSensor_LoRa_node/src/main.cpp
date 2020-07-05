@@ -12,9 +12,10 @@
 //            OK, configured to sleep 1 minute (8s * CYCLESCOUNT seconds), do a sensitivity 
 //            test, measure the light levels, and send light levels and voltage via LoRa. 
 //            LEDs are on during the send. Running ok. 
-// 7.5.20     Changed scale to 10 (hardwire, pulling S2 to GND); added TSL230_S0 control pin (A4)
-//            Modified setSensitivity() to include '0' and added delayMicroseconds(100) to handle
-//            recovery from Power Down. 
+// 7.5.20     Added TSL230_S0 control pin (A4). Modified setSensitivity() to include '0' and 
+//            added delayMicroseconds(100) to handle recovery from Power Down. 
+//            Tested hardwiring frequency divider to 10 - Issue!  with high illumination, 
+//            frequency scalar to 10 stalls the program, as the ISR becomes too busy! 
 // 7.5.20 -   *** Need to figure out error in light levels processing ***
 //
 // much of the code TSL320R based on: 
@@ -121,7 +122,6 @@ uint8_t sensitivity;            // toggle between 1 or 100
 // However, code-calculated values with flashlight illumination are NOT consistent!)
 volatile uint32_t  pulseCount = 0;      // accumulated count in ISR; needs to be accessible for reset 
 volatile uint32_t  curPulseCount = 0;   // pulses accumulated over interval; accessed to obtain frequency
-volatile uint32_t  pulsePeriod = 0;       // track the rate of pulses
 
 elapsedMillis readTime;
 uint16_t interval = 1000;               // time spent counting pulses; default 1s; available range 0 - 65s (65536 ms)
@@ -129,7 +129,7 @@ uint16_t interval = 1000;               // time spent counting pulses; default 1
 #define MININTERVAL 100                 // limit interval to vary from 100ms to 10s 
 #define MAXINTERVAL 10000
 
-uint8_t scale = 10;                    // frequency scaling; hardwired on my test board to 10 (divide-by)
+uint8_t scale = 100;                    // frequency scaling; hardwired on my test board to 100 (divide-by)
 
 // IMPORTANT - per the datasheet the Illuminance limits for the sensitivity settings:  
 //                sensitivity = 1     0.2uW/cm2 -> 200k uW/cm2 
@@ -143,7 +143,7 @@ uint8_t scale = 10;                    // frequency scaling; hardwired on my tes
 // based on consistency (for high levels) and counts (for low levels)  
 #define LOWLIGHTCRIT  200.0             // uW/cm2 criteria for low level input (so, set sensitivity to 100)
 
-#define CYCLESCOUNT 7                   // Number of cycles of sleep (so: CYCLESCOUNT * 8S sleep, effectively)
+#define CYCLESCOUNT 1                   // Number of cycles of sleep (so: CYCLESCOUNT * 8S sleep, effectively)
 uint16_t countCycles = 0;
 
 float uWattCm2;                         // calculated light level 
@@ -178,16 +178,12 @@ void setup()
   myRadio.setFrequency(RADIO_FREQUENCY);
   myRadio.setTxPower(RADIO_TX_POWER);
 
-  Serial.println("Radio to sleep"); 
-
   // Radio - put it to sleep to save energy
   // "Sets the radio into low-power sleep mode. If successful, the transport will stay in sleep
   // mode until woken by changing mode it idle, transmit or receive (eg by calling send(), recv(),
   // available() etc). Caution: there is a time penalty as the radio takes a finite time to wake 
   // from sleep mode. Return true if sleep mode was successfully entered."
   myRadio.sleep();
-
-  Serial.println("Flash to sleep"); 
 
   // Flash - We're not using, so just power it down to save energy
   myFlash.init(T2_WPN_FLASH_SPI_CS);
@@ -200,26 +196,10 @@ void setup()
   pinMode(TSL230_S1, OUTPUT);
   setSensitivity(1);     // initialize as low sensitivity (S0 HIGH S1 LOW)
 
-  Serial.println("Attach interrupt"); 
-
   // begin monitoring the light sensor
   attachInterrupt(digitalPinToInterrupt(TSL230_INT), add_pulse, RISING);
   elapsedRead = 0;
   readingLight = true; 
-
-  Serial.println("flag values: "); 
-  Serial.print("countCycles "); 
-  Serial.println(countCycles); 
-  Serial.print("CYCLESCOUNT "); 
-  Serial.println(CYCLESCOUNT); 
-  Serial.print("readingLight "); 
-  Serial.println(readingLight); 
-  Serial.print("countCycles "); 
-  Serial.println(countCycles); 
-  Serial.print("elapsedRead "); 
-  Serial.println(elapsedRead); 
-  Serial.print("readingInterval "); 
-  Serial.println(readingInterval); 
 
 }
 
@@ -295,11 +275,13 @@ void setSensitivity(uint8_t level) {
       digitalWrite(TSL230_S0, HIGH); 
       digitalWrite(TSL230_S1, LOW);  
       sensitivity = 1;
+
       break;
     case 100:                           // S0 HIGH and S1 HIGH = 100x sensitivity
       digitalWrite(TSL230_S0, HIGH); 
       digitalWrite(TSL230_S1, HIGH);  
       sensitivity = 100;
+
       break;
     case 0:                           // Both S0 and S1 LOW => POWER DOWN device
       digitalWrite(TSL230_S0, LOW);
@@ -435,6 +417,7 @@ void adjustLevel() {
   while (elapsedRead < readingInterval) {
     // wait for a read to be entered in the ISR
   }
+
   interval = elapsedRead; 
   curPulseCount = pulseCount; 
 
