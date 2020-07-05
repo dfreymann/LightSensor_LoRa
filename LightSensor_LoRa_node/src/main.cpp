@@ -12,6 +12,7 @@
 //            OK, configured to sleep 1 minute (8s * CYCLESCOUNT seconds), do a sensitivity 
 //            test, measure the light levels, and send light levels and voltage via LoRa. 
 //            LEDs are on during the send. Running ok. 
+// 7.5.20 -   *** Need to figure out error in light levels processing ***
 //
 // much of the code TSL320R based on: 
 // http://home.teampaulc.org/arduino/tsl230r-to-arduino-interface

@@ -12,7 +12,7 @@
 // 7.4.20  Revised node code (sender)
 // 
 // TODO: 
-//      1st - implement a clean 'waiting' indicator to display dots when no data
+//      1st - implement a clean 'waiting' indicator to display dots on OLED when no data
 //      2nd - annotate to note the hidden details that are defaults in RadioHead
 //            (and which differ from HelTec); break them out so everything is 
 //            explicitly configured (or can be). 
