@@ -1,0 +1,8 @@
+.pio
+.vscode/
+test/
+backup/
+.travis.yml
+
+# access information
+*tokens.h
