@@ -9,17 +9,17 @@
 // 7.2.20  OK, have basic ThingSpeak upload working OK
 // 7.3.20  Restructured to require both lightlevel and voltage for display/upload
 //         OK, uploading three fields to ThinkSpeak at once (lightlevel, voltage, RSSI) 
+// 7.4.20  Revised node code (sender)
 // 
 // TODO: 
-//      1st - Revise node code (sender) to send light level and voltage as 
-//            one measurement (for future wake up - report - sleep behavior)
-//      2nd - revise to use T2Task structure for reporting (display & serial)
-//      3rd - implement a clean 'waiting' indicator to display dots when no data
-//      3rd - annotate to note the hidden details that are defaults in RadioHead
+//      1st - implement a clean 'waiting' indicator to display dots when no data
+//      2nd - annotate to note the hidden details that are defaults in RadioHead
 //            (and which differ from HelTec); break them out so everything is 
 //            explicitly configured (or can be). 
-//      4th - return to sensor circuit, which is saturating in outdoor light
-//      5th - adjust ThingSpeak plotting to use log scale for light levels
+//      3rd - return to sensor circuit, which is saturating in outdoor light
+//      4th - adjust ThingSpeak plotting to use log scale for light levels
+//      5th - Revise node code (sender) to send light level and voltage as 
+//            a struct to simplify future wake up - report - sleep behavior
 //
 //
 // For the HELTEC ESP32_LoRa board I am using: 
