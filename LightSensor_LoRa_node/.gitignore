@@ -3,4 +3,4 @@
 test/
 backup/
 .travis.yml
-*workspace
+*-workspace
