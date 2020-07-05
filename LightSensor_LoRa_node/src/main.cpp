@@ -12,6 +12,9 @@
 //            OK, configured to sleep 1 minute (8s * CYCLESCOUNT seconds), do a sensitivity 
 //            test, measure the light levels, and send light levels and voltage via LoRa. 
 //            LEDs are on during the send. Running ok. 
+// 7.5.20     Changed scale to 10 (hardwire, pulling S2 to GND); added TSL230_S0 control pin (A4)
+//            Modified setSensitivity() to include '0' and added delayMicroseconds(100) to handle
+//            recovery from Power Down. 
 // 7.5.20 -   *** Need to figure out error in light levels processing ***
 //
 // much of the code TSL320R based on: 
@@ -100,6 +103,7 @@ union fsend_t{
 // TSL230 Config 
 #define TSL230_INT        3     // TSL230 Hardware Interrupt (ARDUINO INT1)
 #define TSL230_S1         A1    // TSL230 S1 Pin Control (set to GND: Low Sensitivy, Set to HIGH: High Sensitivity)
+#define TSL230_S0         A4    // TSL230 S0 Pin Control (S0, S1 to GND - Power Off) 
 // My test board for the TSL230 is configured: 
 // S0 HIGH, S2 HIGH, S3 HIGH
 // SO, S1 set the sensitivity - TSL230_S1 (Digital Pin 1) HIGH -> low sensitivity; TSL230_S1 LOW -> high sensitivity
@@ -125,7 +129,7 @@ uint16_t interval = 1000;               // time spent counting pulses; default 1
 #define MININTERVAL 100                 // limit interval to vary from 100ms to 10s 
 #define MAXINTERVAL 10000
 
-uint8_t scale = 100;                    // frequency scaling; hardwired on my test board to 100 (divide-by)
+uint8_t scale = 10;                    // frequency scaling; hardwired on my test board to 10 (divide-by)
 
 // IMPORTANT - per the datasheet the Illuminance limits for the sensitivity settings:  
 //                sensitivity = 1     0.2uW/cm2 -> 200k uW/cm2 
@@ -192,6 +196,7 @@ void setup()
   // setup for the light sensor interface
   pinMode(TSL230_INT, INPUT);       // Interrupt pin
   
+  pinMode(TSL230_S0, OUTPUT);
   pinMode(TSL230_S1, OUTPUT);
   setSensitivity(1);     // initialize as low sensitivity (S0 HIGH S1 LOW)
 
@@ -227,7 +232,7 @@ void loop() {
     attachInterrupt(digitalPinToInterrupt(TSL230_INT), add_pulse, RISING);
 
     // Test the level adjustment before making a reading 
-    adjustLevel();
+    adjustLevel();        // This sets sensitivity, turning TSL230 on if in Power Down mode
 
     // Reset and make the reading that will be output 
     pulseCount = 0;                 // reset the count
@@ -262,6 +267,9 @@ void loop() {
     myRadio.sleep();                // turn off the radio 
     countCycles = 0;                // reset the sleep cycle count
 
+    // Power down TSL230
+    setSensitivity(0); 
+
     // need this because next call is to powerDown; allow things to settle
     delay(500); 
 
@@ -283,15 +291,24 @@ void setSensitivity(uint8_t level) {
 
   switch (level)
   {
-    case 1:
-       digitalWrite(TSL230_S1, LOW);  // S0 HIGH and S1 LOW = 1x sensitivity
-       sensitivity = 1;
-       break;
-    case 100:
-       digitalWrite(TSL230_S1, HIGH);  // S0 HIGH and S1 HIGH = 100x sensitivity
-       sensitivity = 100;
-       break;
+    case 1:                             // S0 HIGH and S1 LOW = 1x sensitivity
+      digitalWrite(TSL230_S0, HIGH); 
+      digitalWrite(TSL230_S1, LOW);  
+      sensitivity = 1;
+      break;
+    case 100:                           // S0 HIGH and S1 HIGH = 100x sensitivity
+      digitalWrite(TSL230_S0, HIGH); 
+      digitalWrite(TSL230_S1, HIGH);  
+      sensitivity = 100;
+      break;
+    case 0:                           // Both S0 and S1 LOW => POWER DOWN device
+      digitalWrite(TSL230_S0, LOW);
+      digitalWrite(TSL230_S1, LOW); 
+      sensitivity = 0;
+      break; 
   }
+
+  delayMicroseconds(100);   // TSL230 recovery time from Power Down
 
   curPulseCount = 0;   // reset the counts after changing sensitivity
 
