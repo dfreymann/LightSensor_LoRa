@@ -1,7 +1,7 @@
 // TSL320R Light Sensor as Lora Node - implemented using Whispernode board
 // dmf 6.11.20
 // 
-// 6.14.20 -  Rinally got an auto-ranging algorithm to work. nonlinearity/saturation 
+// 6.14.20 -  Finally got an auto-ranging algorithm to work. nonlinearity/saturation 
 //            was a pain in the ass. all good for now. 
 // 6.16.20 -  Functioning but there is an issue with saturation - to debug
 // 6.16.20 -  Possible issue: the device is saturating in the shade outside. This is not the 
