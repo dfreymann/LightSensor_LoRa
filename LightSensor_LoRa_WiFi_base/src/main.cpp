@@ -311,13 +311,13 @@ void displayReceived() {     // Display data on the OLED (2s total)
     myDisplay.drawString(0, 40, "With RSSI " + (String) (rssiValue) + "db");
     myDisplay.drawString(0, 50, "With SNR " + (String) (SNRValue) + "db");
     myDisplay.display();
-    delay(1000);          // pause
+    delay(5000);          // pause 5s
     myDisplay.clear();
     // OLED display - then the voltage 
     myDisplay.drawString(0, 0, "Latest Voltage Readings");
     myDisplay.drawString(0, 20, "Battery: " + (String) (batVoltage) + " mV");
     myDisplay.display();
-    delay(1000);          // pause
+    delay(5000);          // pause 5s
     myDisplay.clear();  
     myDisplay.display();  // clear the screen
 }
