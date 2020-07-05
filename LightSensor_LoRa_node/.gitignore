@@ -3,12 +3,4 @@
 test/
 backup/
 .travis.yml
-<<<<<<< HEAD
-<<<<<<< HEAD
 *-workspace
-=======
-*workspace
->>>>>>> 61b1e6ed8ed51f7bfa06f484dc4aac9923589129
-=======
-*-workspace
->>>>>>> 1ad17b247a93bf697c6b198ed97442d0dfb0b962
